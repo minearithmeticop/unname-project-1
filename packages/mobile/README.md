@@ -7,11 +7,11 @@ React Native mobile application built with Expo for iOS and Android.
 ## 📦 Purpose
 
 A cross-platform mobile application that:
-- Uses shared utilities and hooks from `@monorepo/core`
 - Supports iOS and Android with a single codebase
 - Leverages Expo for simplified development and deployment
 - Demonstrates mobile best practices with React Native
 - Follows **Atomic Design** and **Clean Architecture** patterns
+- Integrated with Supabase for authentication and backend services
 
 ---
 
@@ -34,7 +34,6 @@ This project follows these design patterns:
 
 - Node.js 20.x or higher
 - pnpm 8.x or higher (recommended)
-- Built `@monorepo/core` package
 
 #### Platform-Specific Requirements:
 
@@ -113,13 +112,14 @@ pnpm start
 
 | Technology | Version | Purpose | Documentation |
 |-----------|---------|---------|---------------|
-| **React Native** | 0.74.x | Mobile Framework | https://reactnative.dev/ |
-| **Expo** | SDK 51.x | Development Platform | https://docs.expo.dev/ |
-| **React** | 18.2.0 | UI Library | https://react.dev/ |
-| **TypeScript** | 5.6.x | Type Safety | https://www.typescriptlang.org/ |
-| **Expo Router** | 3.x | File-based Routing | https://docs.expo.dev/router/introduction/ |
-| **@monorepo/core** | workspace:* | Shared Utilities | ../core/README.md |
-| **React Native Paper** | 5.x | UI Components (optional) | https://callstack.github.io/react-native-paper/ |
+| **React Native** | 0.81.5 | Mobile Framework | https://reactnative.dev/ |
+| **Expo** | SDK 54.x | Development Platform | https://docs.expo.dev/ |
+| **React** | 19.1.0 | UI Library | https://react.dev/ |
+| **TypeScript** | 5.3.x | Type Safety | https://www.typescriptlang.org/ |
+| **Expo Router** | 6.x | File-based Routing | https://docs.expo.dev/router/introduction/ |
+| **Supabase** | 2.76.1 | Backend & Auth | https://supabase.com/docs |
+| **AsyncStorage** | 2.2.0 | Local Storage | https://react-native-async-storage.github.io/ |
+| **Ionicons** | 15.0.3 | Icon Library | https://ionic.io/ionicons |
 
 ---
 
@@ -264,15 +264,20 @@ packages/mobile/
   "dependencies": {
     "react": "19.1.0",
     "react-native": "0.81.5",
-    "expo": "~54.0.20",
+    "expo": "~54.0.0",
     "expo-router": "~6.0.13",
-    "expo-status-bar": "~2.0.0",
-    "@monorepo/core": "workspace:*"
+    "expo-status-bar": "~3.0.8",
+    "@expo/vector-icons": "^15.0.3",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@supabase/supabase-js": "^2.76.1",
+    "react-native-url-polyfill": "^3.0.0"
   },
   "devDependencies": {
-    "@types/react": "~18.2.45",
-    "typescript": "^5.6.2",
-    "@babel/core": "^7.24.0"
+    "@types/react": "~19.1.17",
+    "typescript": "^5.3.3",
+    "@babel/core": "^7.24.0",
+    "eslint": "^9.38.0",
+    "eslint-config-expo": "10.0.1-canary-20251023-4c86f95"
   }
 }
 ```
@@ -366,11 +371,6 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Resolve core package
-config.resolver.extraNodeModules = {
-  '@monorepo/core': path.resolve(workspaceRoot, 'packages/core'),
-};
-
 module.exports = config;
 ```
 
@@ -454,25 +454,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
 });
-```
-
-### Import Utilities from Core Package
-
-```typescript
-// Import from monorepo core package
-import { useCounter, formatDate } from '@monorepo/core';
-import { View, Text, Button } from 'react-native';
-
-export default function HomeScreen() {
-  const { count, increment } = useCounter(0);
-  
-  return (
-    <View>
-      <Text>Count: {count}</Text>
-      <Button title="Increment" onPress={increment} />
-    </View>
-  );
-}
 ```
 
 ### Platform-Specific Code
@@ -690,16 +671,6 @@ rm -rf node_modules
 pnpm install
 ```
 
-### Core Package Not Found
-
-```bash
-# Build core package
-cd ../core
-pnpm build
-cd ../mobile
-pnpm install
-```
-
 ### Metro Bundler Issues
 
 ```bash
@@ -752,7 +723,8 @@ cd ..
 
 ## ⚠️ Important Notes
 
-1. **Not all `@monorepo/core` components work in React Native** - Only use platform-agnostic utilities and hooks
-2. **Native modules may require custom development client** - Use `eas build` for custom native code
-3. **iOS development requires macOS** - Can't build for iOS on Windows/Linux
-4. **Use Expo Go for quick testing** - For custom native modules, use development builds
+1. **Supabase configuration required** - See [SUPABASE_SETUP.md](./docs/SUPABASE_SETUP.md) and [AUTHENTICATION.md](./docs/AUTHENTICATION.md) for setup
+2. **Environment variables** - Copy `.env.example` to `.env` and add your Supabase credentials
+3. **Native modules may require custom development client** - Use `eas build` for custom native code
+4. **iOS development requires macOS** - Can't build for iOS on Windows/Linux
+5. **Use Expo Go for quick testing** - For custom native modules, use development builds
