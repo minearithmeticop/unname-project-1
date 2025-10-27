@@ -2,6 +2,8 @@
 
 React Native mobile application built with Expo for iOS and Android.
 
+> 📐 **For detailed architecture and design patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md)**
+
 ## 📦 Purpose
 
 A cross-platform mobile application that:
@@ -9,6 +11,20 @@ A cross-platform mobile application that:
 - Supports iOS and Android with a single codebase
 - Leverages Expo for simplified development and deployment
 - Demonstrates mobile best practices with React Native
+- Follows **Atomic Design** and **Clean Architecture** patterns
+
+---
+
+## 🏗️ Architecture Highlights
+
+This project follows these design patterns:
+- ✅ **Atomic Design** - Components organized as atoms, molecules, organisms
+- ✅ **Feature-Based Structure** - Code organized by features, not file types
+- ✅ **Custom Hooks Pattern** - Reusable logic extracted into hooks
+- ✅ **Context API** - Global state management
+- ✅ **Clean Architecture** - Separation of concerns
+
+**👉 [Read full architecture documentation →](./ARCHITECTURE.md)**
 
 ---
 
@@ -168,31 +184,51 @@ pnpm test:watch
 
 ```
 packages/mobile/
-├── app/                # Expo Router app directory
-│   ├── (tabs)/         # Tab navigation
-│   │   ├── index.tsx   # Home screen
-│   │   └── profile.tsx # Profile screen
-│   ├── _layout.tsx     # Root layout
-│   └── +not-found.tsx  # 404 screen
-├── assets/             # Images, fonts, etc.
-│   ├── images/
-│   └── fonts/
-├── components/         # React components
-│   ├── Button.tsx
-│   └── Card.tsx
-├── hooks/              # Custom hooks
-│   └── useAuth.ts
-├── constants/          # App constants
-│   └── Colors.ts
-├── utils/              # Utility functions
-│   └── storage.ts
-├── app.json            # Expo configuration
-├── eas.json            # EAS Build configuration
+├── app/                      # Expo Router (screens)
+│   ├── (tabs)/              # Tab navigation
+│   │   ├── index.tsx        # Home screen
+│   │   └── profile.tsx      # Profile screen
+│   ├── _layout.tsx          # Root layout
+│   └── +not-found.tsx       # 404 screen
+│
+├── src/                     # Source code
+│   ├── components/          # UI Components (Atomic Design)
+│   │   ├── atoms/           # Basic building blocks
+│   │   │   ├── Button.tsx
+│   │   │   └── Typography.tsx
+│   │   ├── molecules/       # Combined components
+│   │   │   └── Card.tsx
+│   │   └── organisms/       # Complex components
+│   │
+│   ├── features/            # Feature modules
+│   │   ├── auth/            # Authentication feature
+│   │   ├── products/        # Products feature
+│   │   └── profile/         # Profile feature
+│   │
+│   ├── hooks/               # Custom React hooks
+│   │   └── useCounter.ts
+│   │
+│   ├── contexts/            # React Context providers
+│   │   └── ThemeContext.tsx
+│   │
+│   ├── utils/               # Utility functions
+│   │   └── helpers.ts
+│   │
+│   ├── types/               # TypeScript type definitions
+│   │   └── index.ts
+│   │
+│   └── constants/           # App constants
+│       └── index.ts
+│
+├── assets/                  # Images, fonts, etc.
+├── ARCHITECTURE.md          # 📐 Architecture documentation
 ├── package.json
-├── tsconfig.json       # TypeScript config
-├── metro.config.js     # Metro bundler config
+├── tsconfig.json
+├── app.json
 └── README.md
 ```
+
+**Note:** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of each folder's purpose.
 
 ---
 
@@ -350,10 +386,70 @@ module.exports = config;
 
 ## 📖 Using Shared Code
 
-### Import Utilities from Core
+### Import from Components
 
 ```typescript
-// app/index.tsx
+// Import from atoms
+import { Button, Typography } from '@/components/atoms';
+
+// Import from molecules
+import { Card } from '@/components/molecules';
+
+// Import hooks
+import { useCounter } from '@/hooks';
+
+// Import contexts
+import { useTheme } from '@/contexts';
+
+// Import utilities
+import { formatDate, validateEmail } from '@/utils';
+
+// Import constants
+import { COLORS, SPACING } from '@/constants';
+```
+
+### Example Usage
+
+```typescript
+// app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
+import { Button, Typography } from '@/components/atoms';
+import { Card } from '@/components/molecules';
+import { useCounter } from '@/hooks';
+import { COLORS, SPACING } from '@/constants';
+
+export default function HomeScreen() {
+  const { count, increment, decrement } = useCounter(0);
+  
+  return (
+    <View style={styles.container}>
+      <Card 
+        title="Counter Demo"
+        description={`Current count: ${count}`}
+        onPress={increment}
+        buttonText="Increment"
+      />
+      
+      <Button variant="secondary" onPress={decrement}>
+        Decrement
+      </Button>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: SPACING.md,
+    backgroundColor: COLORS.background,
+  },
+});
+```
+
+### Import Utilities from Core Package
+
+```typescript
+// Import from monorepo core package
 import { useCounter, formatDate } from '@monorepo/core';
 import { View, Text, Button } from 'react-native';
 
