@@ -6,12 +6,16 @@ import { useTodo } from '../../../contexts/TodoContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { TodoItem } from '../components/TodoItem';
 import { AddTodoModal } from '../components/AddTodoModal';
+import { EditTodoModal } from '../components/EditTodoModal';
+import { Todo } from '../../../types/todo';
 import { COLORS, SPACING } from '../../../constants';
 
 export function TodoScreen() {
   const { todos, toggleTodo, deleteTodo } = useTodo();
   const { theme } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
   const isDark = theme === 'dark';
   const bgColor = isDark ? COLORS.background.dark : COLORS.background.light;
@@ -24,6 +28,16 @@ export function TodoScreen() {
   // Separate completed and pending
   const pendingTodos = todayTodos.filter(t => !t.completed);
   const completedTodos = todayTodos.filter(t => t.completed);
+
+  const handleEdit = (todo: Todo) => {
+    setEditingTodo(todo);
+    setEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalVisible(false);
+    setEditingTodo(null);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
@@ -48,6 +62,7 @@ export function TodoScreen() {
             todo={item}
             onToggle={() => toggleTodo(item.id)}
             onDelete={() => deleteTodo(item.id)}
+            onEdit={() => handleEdit(item)}
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -73,6 +88,13 @@ export function TodoScreen() {
       <AddTodoModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
+      />
+
+      {/* Edit Todo Modal */}
+      <EditTodoModal
+        visible={editModalVisible}
+        onClose={handleCloseEditModal}
+        todo={editingTodo}
       />
     </View>
   );

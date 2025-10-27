@@ -1,22 +1,23 @@
 import { Modal, View, StyleSheet, TextInput, TouchableOpacity, ScrollView, Platform, Alert, Switch } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Typography } from '../../../components/atoms/Typography';
 import { Button } from '../../../components/atoms/Button';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useTodo } from '../../../contexts/TodoContext';
-import { TodoFormData } from '../../../types/todo';
+import { Todo } from '../../../types/todo';
 import { COLORS, SPACING } from '../../../constants';
 
-interface AddTodoModalProps {
+interface EditTodoModalProps {
   visible: boolean;
   onClose: () => void;
+  todo: Todo | null;
 }
 
-export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
+export function EditTodoModal({ visible, onClose, todo }: EditTodoModalProps) {
   const { theme } = useTheme();
-  const { addTodo } = useTodo();
+  const { updateTodo } = useTodo();
   const isDark = theme === 'dark';
 
   const [title, setTitle] = useState('');
@@ -31,6 +32,35 @@ export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
   const bgColor = isDark ? '#1a1a1a' : '#ffffff';
   const textColor = isDark ? COLORS.text.light : COLORS.text.dark;
   const inputBg = isDark ? '#2a2a2a' : '#f5f5f5';
+
+  // Load todo data when modal opens
+  useEffect(() => {
+    if (visible && todo) {
+      setTitle(todo.title);
+      setDescription(todo.description || '');
+      setPriority(todo.priority);
+      setAlert(todo.alert || false);
+
+      // Parse time strings to Date objects
+      if (todo.startTime) {
+        const [hours, minutes] = todo.startTime.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes));
+        setStartTime(date);
+      } else {
+        setStartTime(null);
+      }
+
+      if (todo.endTime) {
+        const [hours, minutes] = todo.endTime.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes));
+        setEndTime(date);
+      } else {
+        setEndTime(null);
+      }
+    }
+  }, [visible, todo]);
 
   const formatTime = (date: Date | null): string | undefined => {
     if (!date) return undefined;
@@ -63,25 +93,17 @@ export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
       return;
     }
 
-    const formData: TodoFormData = {
+    if (!todo) return;
+
+    await updateTodo(todo.id, {
       title: title.trim(),
       description: description.trim() || undefined,
-      date: new Date().toISOString().split('T')[0], // Today
       startTime: formatTime(startTime),
       endTime: formatTime(endTime),
       alert,
       priority,
-    };
+    });
 
-    await addTodo(formData);
-    
-    // Reset form
-    setTitle('');
-    setDescription('');
-    setStartTime(null);
-    setEndTime(null);
-    setAlert(false);
-    setPriority('medium');
     onClose();
   };
 
@@ -91,6 +113,8 @@ export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
     { value: 'high', label: 'High', color: '#F44336' },
   ];
 
+  if (!todo) return null;
+
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
@@ -98,7 +122,7 @@ export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
           {/* Header */}
           <View style={styles.header}>
             <Typography variant="h2" style={{ color: textColor }}>
-              Add New Task
+              Edit Task
             </Typography>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color={textColor} />
@@ -248,7 +272,7 @@ export function AddTodoModal({ visible, onClose }: AddTodoModalProps) {
           {/* Footer */}
           <View style={styles.footer}>
             <Button title="Cancel" onPress={onClose} variant="outline" style={{ flex: 1, marginRight: 8 }} />
-            <Button title="Add Task" onPress={handleSubmit} variant="primary" style={{ flex: 1 }} />
+            <Button title="Save Changes" onPress={handleSubmit} variant="primary" style={{ flex: 1 }} />
           </View>
         </View>
       </View>

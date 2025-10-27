@@ -10,9 +10,10 @@ interface TodoItemProps {
   todo: Todo;
   onToggle: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
   const { theme } = useTheme();
   const { startPomodoro } = usePomodoro();
   const isDark = theme === 'dark';
@@ -62,24 +63,43 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
             {todo.description}
           </Typography>
         )}
-        {todo.time && (
+        {/* Time Range Display */}
+        {(todo.startTime || todo.endTime) && (
           <View style={styles.timeContainer}>
             <Ionicons name="time-outline" size={14} color={COLORS.textSecondary} />
             <Typography variant="caption" style={{ color: COLORS.textSecondary, marginLeft: 4 }}>
-              {todo.time}
+              {todo.startTime && todo.endTime 
+                ? `${todo.startTime} - ${todo.endTime}`
+                : todo.startTime || todo.endTime}
             </Typography>
+            {todo.alert && (
+              <Ionicons 
+                name="notifications" 
+                size={12} 
+                color={COLORS.primary} 
+                style={{ marginLeft: 6 }} 
+              />
+            )}
           </View>
         )}
       </View>
 
-      {/* Pomodoro Button (only for non-completed tasks) */}
+      {/* Action Buttons (only for non-completed tasks) */}
       {!todo.completed && (
-        <TouchableOpacity 
-          onPress={() => startPomodoro(todo.title)} 
-          style={styles.pomodoroButton}
-        >
-          <Ionicons name="timer-outline" size={20} color={COLORS.primary} />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity 
+            onPress={() => startPomodoro(todo.title)} 
+            style={styles.actionButton}
+          >
+            <Ionicons name="timer-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={onEdit} 
+            style={styles.actionButton}
+          >
+            <Ionicons name="create-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+        </>
       )}
 
       {/* Delete Button */}
@@ -129,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  pomodoroButton: {
+  actionButton: {
     padding: SPACING.xs,
     marginRight: SPACING.xs,
   },

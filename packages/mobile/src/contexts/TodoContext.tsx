@@ -1,6 +1,11 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Todo, TodoFormData } from '../types/todo';
+import { 
+  scheduleTaskNotification, 
+  cancelTaskNotification,
+  registerForPushNotificationsAsync 
+} from '../services/notificationService';
 
 interface TodoContextValue {
   todos: Todo[];
@@ -20,9 +25,10 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load todos from storage
+  // Load todos from storage and register notifications
   useEffect(() => {
     loadTodos();
+    registerForPushNotificationsAsync();
   }, []);
 
   const loadTodos = async () => {
@@ -55,19 +61,62 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // Schedule notification if alert is enabled and startTime exists
+    if (data.alert && data.startTime) {
+      const notificationId = await scheduleTaskNotification(
+        data.title,
+        data.startTime,
+        newTodo.id
+      );
+      if (notificationId) {
+        newTodo.notificationId = notificationId;
+      }
+    }
+
     await saveTodos([...todos, newTodo]);
   };
 
   const updateTodo = async (id: string, data: Partial<Todo>) => {
-    const updated = todos.map(todo =>
-      todo.id === id
-        ? { ...todo, ...data, updatedAt: new Date().toISOString() }
-        : todo
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+
+    // Cancel old notification if exists
+    if (todo.notificationId) {
+      await cancelTaskNotification(todo.notificationId);
+    }
+
+    // Schedule new notification if alert is enabled and startTime exists
+    let notificationId: string | undefined;
+    if (data.alert && data.startTime) {
+      notificationId = await scheduleTaskNotification(
+        data.title || todo.title,
+        data.startTime,
+        id
+      );
+    }
+
+    const updated = todos.map(t =>
+      t.id === id
+        ? { 
+            ...t, 
+            ...data, 
+            notificationId: notificationId || undefined,
+            updatedAt: new Date().toISOString() 
+          }
+        : t
     );
     await saveTodos(updated);
   };
 
   const deleteTodo = async (id: string) => {
+    const todo = todos.find(t => t.id === id);
+    
+    // Cancel notification if exists
+    if (todo?.notificationId) {
+      await cancelTaskNotification(todo.notificationId);
+    }
+
     const filtered = todos.filter(todo => todo.id !== id);
     await saveTodos(filtered);
   };

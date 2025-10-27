@@ -7,6 +7,7 @@ import { useTodo } from '../../src/contexts/TodoContext';
 import { useDream } from '../../src/contexts/DreamContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { PomodoroTimer } from '../../src/components/organisms/PomodoroTimer';
+import { NotificationDebugger } from '../../src/components/organisms/NotificationDebugger';
 import { COLORS, SPACING } from '../../src/constants';
 
 export default function DashboardScreen() {
@@ -92,18 +93,27 @@ export default function DashboardScreen() {
             </Typography>
           </View>
         ) : (
-          <View style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}>
+          <TouchableOpacity 
+            style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}
+            onPress={() => router.push('/todo')}
+            activeOpacity={0.7}
+          >
             <Ionicons name="add-circle-outline" size={32} color={COLORS.primary} />
             <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
-              No tasks for today. Create your first task! 💪
+              No tasks for today.{'\n'}Create your first task! 💪
             </Typography>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
 
       {/* Pomodoro Timer */}
       <View style={styles.section}>
         <PomodoroTimer compact />
+      </View>
+
+      {/* Notification Debugger */}
+      <View style={styles.section}>
+        <NotificationDebugger />
       </View>
 
       {/* Today's Stats */}
