@@ -130,7 +130,10 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor }]}>
+    <ScrollView 
+      style={[styles.container, { backgroundColor }]}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.content}>
         <Typography variant="h1" style={{ color: textColor }}>
           Profile
@@ -147,26 +150,26 @@ export default function ProfileScreen() {
             variant="primary"
           />
         </View>
+      </View>
 
-        {/* Spacer to push buttons to bottom */}
-        <View style={styles.spacer} />
+      {/* Spacer to push buttons to bottom */}
+      <View style={styles.spacer} />
 
-        {/* Bottom Action Buttons */}
-        <View style={styles.bottomActions}>
-          <Button
-            title="Change Password"
-            onPress={handleChangePassword}
-            variant="secondary"
-            style={{ marginBottom: SPACING.sm }}
-          />
-          
-          <Button
-            title="Logout"
-            onPress={handleLogout}
-            variant="ghost"
-            style={{ marginBottom: SPACING.md }}
-          />
-        </View>
+      {/* Bottom Action Buttons */}
+      <View style={styles.bottomActions}>
+        <Button
+          title="Change Password"
+          onPress={handleChangePassword}
+          variant="secondary"
+          style={{ marginBottom: SPACING.sm }}
+        />
+        
+        <Button
+          title="Logout"
+          onPress={handleLogout}
+          variant="ghost"
+          style={{ marginBottom: SPACING.md }}
+        />
 
         {/* Info Section */}
         <View style={styles.infoContainer}>
@@ -186,9 +189,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     padding: SPACING.lg,
+  },
+  content: {
+    width: '100%',
   },
   cardContainer: {
     width: '100%',
