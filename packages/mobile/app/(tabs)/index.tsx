@@ -1,37 +1,19 @@
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, Platform } from 'react-native';
 import { Button } from '../../src/components/atoms/Button';
 import { Typography } from '../../src/components/atoms/Typography';
 import { Card } from '../../src/components/molecules/Card';
 import { useCounter } from '../../src/hooks/useCounter';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { AuthScreen } from '../../src/screens/AuthScreen';
 import { SPACING, COLORS } from '../../src/constants';
 
 export default function HomeScreen() {
   const { count, increment, decrement, reset } = useCounter(0);
   const { theme, toggleTheme } = useTheme();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
-
-  // Show loading while checking authentication
-  if (authLoading) {
-    return (
-      <View style={[styles.container, styles.centered, { backgroundColor }]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Typography variant="body" style={{ color: textColor, marginTop: SPACING.md }}>
-          Loading...
-        </Typography>
-      </View>
-    );
-  }
-
-  // Show auth screen if not logged in
-  if (!user) {
-    return <AuthScreen />;
-  }
 
   const handleSignOut = async () => {
     console.log('🔵 handleSignOut called!')
@@ -96,7 +78,7 @@ export default function HomeScreen() {
             Welcome Back! 👋
           </Typography>
           <Typography variant="body" style={{ color: COLORS.textSecondary, marginTop: SPACING.xs }}>
-            {user.email}
+            {user?.email || 'Guest'}
           </Typography>
           <Button
             title="Sign Out"
