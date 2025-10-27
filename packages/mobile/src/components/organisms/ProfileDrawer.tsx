@@ -5,8 +5,13 @@ import { Button } from '../atoms/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { SPACING, COLORS } from '../../constants';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InputModal } from '../molecules/InputModal';
+import { 
+  generateInvitationCode, 
+  getMyInvitationCodes 
+} from '../../services/invitationService';
+import { InvitationCode } from '../../types/invitation';
 
 interface ProfileDrawerProps {
   visible: boolean;
@@ -18,11 +23,98 @@ export function ProfileDrawer({ visible, onClose }: ProfileDrawerProps) {
   const { theme } = useTheme();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
+  
+  // Invitation code states
+  const [currentCode, setCurrentCode] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [loadingCode, setLoadingCode] = useState(false);
+  const [recentCodes, setRecentCodes] = useState<InvitationCode[]>([]);
 
   const isDark = theme === 'dark';
   const bgColor = isDark ? '#1a1a1a' : '#ffffff';
   const textColor = isDark ? COLORS.text.light : COLORS.text.dark;
   const cardBg = isDark ? '#2a2a2a' : '#f5f5f5';
+
+  // Load recent invitation codes
+  useEffect(() => {
+    if (visible) {
+      loadRecentCodes();
+    }
+  }, [visible]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (!expiresAt) return;
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const expiry = new Date(expiresAt).getTime();
+      const diff = expiry - now;
+
+      if (diff <= 0) {
+        setTimeRemaining('Expired');
+        setCurrentCode(null);
+        setExpiresAt(null);
+        clearInterval(interval);
+      } else {
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  const loadRecentCodes = async () => {
+    const { data } = await getMyInvitationCodes();
+    if (data) {
+      setRecentCodes(data.slice(0, 3)); // แสดงแค่ 3 codes ล่าสุด
+    }
+  };
+
+  const handleGenerateCode = async () => {
+    setLoadingCode(true);
+    const { data, error } = await generateInvitationCode();
+    setLoadingCode(false);
+
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
+
+    if (data) {
+      setCurrentCode(data.code);
+      setExpiresAt(data.expires_at);
+      loadRecentCodes();
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (!currentCode) return;
+    // TODO: Implement clipboard copy
+    Alert.alert('Copied!', `Code ${currentCode} copied to clipboard`);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const maskEmail = (email: string) => {
+    if (!email) return 'N/A';
+    const [username, domain] = email.split('@');
+    if (!domain) return email;
+    const maskedUsername = username.charAt(0) + '***' + username.charAt(username.length - 1);
+    return `${maskedUsername}@${domain}`;
+  };
 
   const handleChangePassword = async () => {
     if (Platform.OS === 'web') {
@@ -126,9 +218,18 @@ export function ProfileDrawer({ visible, onClose }: ProfileDrawerProps) {
             <ScrollView style={styles.content}>
               {/* User Info Card */}
               <View style={[styles.card, { backgroundColor: cardBg }]}>
-                <Typography variant="h3" style={{ color: textColor, marginBottom: SPACING.xs }}>
-                  User Information
-                </Typography>
+                <View style={styles.cardHeader}>
+                  <Typography variant="h3" style={{ color: textColor }}>
+                    User Information
+                  </Typography>
+                  <TouchableOpacity onPress={() => setShowEmail(!showEmail)}>
+                    <Ionicons 
+                      name={showEmail ? 'eye-off-outline' : 'eye-outline'} 
+                      size={24} 
+                      color={textColor} 
+                    />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.infoRow}>
                   <Typography variant="body" style={{ color: COLORS.textSecondary }}>
                     Name:
@@ -142,9 +243,79 @@ export function ProfileDrawer({ visible, onClose }: ProfileDrawerProps) {
                     Email:
                   </Typography>
                   <Typography variant="body" style={{ color: textColor, fontWeight: '600' }}>
-                    {user?.email || 'N/A'}
+                    {showEmail ? (user?.email || 'N/A') : maskEmail(user?.email || '')}
                   </Typography>
                 </View>
+              </View>
+
+              {/* Invitation Code Section */}
+              <View style={[styles.card, { backgroundColor: cardBg }]}>
+                <Typography variant="h3" style={{ color: textColor, marginBottom: SPACING.md }}>
+                  Invite Friends
+                </Typography>
+                
+                {currentCode ? (
+                  <View style={styles.activeCode}>
+                    <View style={styles.codeHeader}>
+                      <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                      <Typography variant="caption" style={{ color: '#999', marginLeft: 6 }}>
+                        Expires in {timeRemaining}
+                      </Typography>
+                    </View>
+                    
+                    <View style={styles.codeDisplay}>
+                      <Typography 
+                        variant="h2" 
+                        style={{ 
+                          color: COLORS.primary, 
+                          letterSpacing: 3,
+                          fontSize: 24 
+                        }}
+                      >
+                        {currentCode}
+                      </Typography>
+                    </View>
+
+                    <TouchableOpacity 
+                      style={styles.copyButton}
+                      onPress={handleCopyCode}
+                    >
+                      <Ionicons name="copy-outline" size={16} color={COLORS.primary} />
+                      <Typography variant="body" style={{ color: COLORS.primary, marginLeft: 6 }}>
+                        Copy Code
+                      </Typography>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Button
+                    title="Generate Code"
+                    onPress={handleGenerateCode}
+                    variant="outline"
+                    icon="add-circle-outline"
+                    disabled={loadingCode}
+                    style={{ marginBottom: SPACING.sm }}
+                  />
+                )}
+
+                {/* Recent Codes */}
+                {recentCodes.length > 0 && (
+                  <View style={styles.recentCodes}>
+                    <Typography variant="caption" style={{ color: '#999', marginBottom: 6 }}>
+                      Recent codes:
+                    </Typography>
+                    {recentCodes.map((code) => (
+                      <View key={code.id} style={styles.recentCodeItem}>
+                        <Typography variant="caption" style={{ color: textColor, letterSpacing: 1 }}>
+                          {code.code}
+                        </Typography>
+                        <View style={[
+                          styles.statusDot,
+                          { backgroundColor: code.is_used ? '#4CAF50' : '#FF9800' }
+                        ]} />
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
 
               {/* Action Buttons */}
@@ -240,6 +411,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: SPACING.sm,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  activeCode: {
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+  },
+  codeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  codeDisplay: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: 8,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+  },
+  recentCodes: {
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  recentCodeItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   buttonContainer: {
     marginTop: SPACING.md,

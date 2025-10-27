@@ -14,6 +14,7 @@ import { Typography } from '../components/atoms/Typography'
 import { Button } from '../components/atoms/Button'
 import { useAuth } from '../contexts/AuthContext'
 import { SPACING, COLORS } from '../constants'
+import { validateInvitationCode, markCodeAsUsed } from '../services/invitationService'
 
 type AuthMode = 'signin' | 'signup' | 'reset'
 
@@ -21,6 +22,7 @@ export function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [invitationCode, setInvitationCode] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn, signUp, resetPassword } = useAuth()
 
@@ -60,6 +62,23 @@ export function AuthScreen() {
       }
     }
 
+    // Validate invitation code for signup
+    if (mode === 'signup') {
+      if (!invitationCode.trim()) {
+        showAlert('Error', 'Please enter an invitation code')
+        return
+      }
+
+      // Validate the invitation code
+      const { data: validationData, error: validationError } = 
+        await validateInvitationCode(invitationCode.trim())
+
+      if (validationError || !validationData?.valid) {
+        showAlert('Invalid Code', validationData?.message || 'The invitation code is invalid')
+        return
+      }
+    }
+
     setLoading(true)
 
     try {
@@ -78,7 +97,7 @@ export function AuthScreen() {
         }
       } else if (mode === 'signup') {
         console.log('📝 Signing up...')
-        const { error } = await signUp(email.trim(), password)
+        const { error, data } = await signUp(email.trim(), password)
         if (error) {
           console.error('Sign up failed:', error)
           if (Platform.OS === 'web') {
@@ -89,6 +108,11 @@ export function AuthScreen() {
         } else {
           console.log('✅ Sign up successful!')
           
+          // Mark invitation code as used
+          if (data?.user) {
+            await markCodeAsUsed(invitationCode.trim(), data.user.id)
+          }
+          
           // Platform-specific success message
           if (Platform.OS === 'web') {
             const message = 'Success! 🎉\n\nYour account has been created. Please check your email to verify your account before signing in.'
@@ -96,6 +120,7 @@ export function AuthScreen() {
             // Switch to sign in mode
             setMode('signin')
             setPassword('')
+            setInvitationCode('')
           } else {
             Alert.alert(
               'Success! 🎉',
@@ -243,6 +268,28 @@ export function AuthScreen() {
                 autoCorrect={false}
                 editable={!loading}
               />
+            </View>
+          )}
+
+          {mode === 'signup' && (
+            <View style={styles.inputContainer}>
+              <Typography variant="body" style={styles.label}>
+                Invitation Code
+              </Typography>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter 8-character code"
+                placeholderTextColor={COLORS.textSecondary}
+                value={invitationCode}
+                onChangeText={setInvitationCode}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={8}
+                editable={!loading}
+              />
+              <Typography variant="caption" style={{ color: '#999', marginTop: 4 }}>
+                Get an invitation code from a friend to sign up
+              </Typography>
             </View>
           )}
 

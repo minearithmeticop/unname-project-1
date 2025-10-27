@@ -80,7 +80,7 @@ export default function DashboardScreen() {
           Welcome back!
         </Typography>
         <Typography variant="body" style={{ color: '#999', marginTop: 4 }}>
-          {user?.email || 'User'}
+          {user?.user_metadata?.display_name || 'User'}
         </Typography>
       </View>
 

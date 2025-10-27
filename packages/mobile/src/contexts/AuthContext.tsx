@@ -11,7 +11,10 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>
+  signUp: (email: string, password: string) => Promise<{ 
+    error: AuthError | null
+    data?: { user: User | null } | null
+  }>
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>
@@ -56,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error('❌ Sign up error:', error)
-        return { error }
+        return { error, data: null }
       }
       
       console.log('✅ Sign up successful:', {
@@ -64,10 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         needsConfirmation: data.user?.identities?.length === 0
       })
       
-      return { error: null }
+      return { error: null, data }
     } catch (error) {
       console.error('❌ Sign up exception:', error)
-      return { error: error as AuthError }
+      return { error: error as AuthError, data: null }
     }
   }
 
