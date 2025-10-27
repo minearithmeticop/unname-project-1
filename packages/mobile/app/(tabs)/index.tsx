@@ -1,105 +1,31 @@
-import { StyleSheet, View, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Button } from '../../src/components/atoms/Button';
 import { Typography } from '../../src/components/atoms/Typography';
 import { Card } from '../../src/components/molecules/Card';
 import { useCounter } from '../../src/hooks/useCounter';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { useAuth } from '../../src/contexts/AuthContext';
 import { SPACING, COLORS } from '../../src/constants';
 
 export default function HomeScreen() {
   const { count, increment, decrement, reset } = useCounter(0);
-  const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { theme } = useTheme();
   
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
 
-  const handleSignOut = async () => {
-    console.log('🔵 handleSignOut called!')
-    
-    // Web-compatible confirmation
-    if (Platform.OS === 'web') {
-      const confirmed = (global as any).confirm?.('Are you sure you want to sign out?')
-      if (!confirmed) return
-      
-      try {
-        console.log('🔄 Starting sign out process...')
-        const { error } = await signOut()
-        
-        if (error) {
-          console.error('Sign out error:', error)
-          ;(global as any).alert?.(`Failed to sign out: ${error.message}`)
-        } else {
-          console.log('✅ Successfully signed out')
-        }
-      } catch (error) {
-        console.error('Sign out exception:', error)
-        ;(global as any).alert?.('An unexpected error occurred')
-      }
-    } else {
-      // Native Alert for iOS/Android
-      Alert.alert(
-        'Sign Out',
-        'Are you sure you want to sign out?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Sign Out',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                console.log('🔄 Starting sign out process...')
-                const { error } = await signOut()
-                
-                if (error) {
-                  console.error('Sign out error:', error)
-                  Alert.alert('Error', `Failed to sign out: ${error.message}`)
-                } else {
-                  console.log('✅ Successfully signed out')
-                }
-              } catch (error) {
-                console.error('Sign out exception:', error)
-                Alert.alert('Error', 'An unexpected error occurred')
-              }
-            },
-          },
-        ]
-      )
-    }
-  };
-
   return (
     <ScrollView style={[styles.container, { backgroundColor }]}>
       <View style={styles.content}>
-        {/* User Info */}
-        <View style={styles.userInfoContainer}>
+        {/* Welcome Message */}
+        <View style={styles.welcomeContainer}>
           <Typography variant="h1" style={{ color: textColor }}>
             Welcome Back! 👋
           </Typography>
-          <Typography variant="body" style={{ color: COLORS.textSecondary, marginTop: SPACING.xs }}>
-            {user?.email || 'Guest'}
-          </Typography>
-          <Button
-            title="Sign Out"
-            onPress={handleSignOut}
-            variant="ghost"
-            style={{ marginTop: SPACING.sm }}
-          />
         </View>
 
         <Typography variant="body" style={{ color: textColor, textAlign: 'center', marginBottom: SPACING.lg }}>
           Built with Expo Router and Custom Components
         </Typography>
-
-        {/* Theme Toggle */}
-        <Card
-          title="Theme Switcher"
-          description={`Current theme: ${theme}`}
-          onPress={toggleTheme}
-          buttonText="Toggle Theme"
-          variant="secondary"
-        />
 
         {/* Counter Demo using Custom Hook */}
         <View style={styles.counterContainer}>
@@ -163,20 +89,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
     padding: SPACING.lg,
     alignItems: 'center',
   },
-  userInfoContainer: {
+  welcomeContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
     paddingVertical: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     width: '100%',
   },
   counterContainer: {
