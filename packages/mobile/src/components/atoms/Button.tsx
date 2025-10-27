@@ -3,8 +3,10 @@ import {
   Text, 
   StyleSheet, 
   ActivityIndicator,
-  TouchableOpacityProps 
+  TouchableOpacityProps,
+  View 
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
  * Button Atom Component
@@ -18,6 +20,7 @@ interface ButtonProps extends TouchableOpacityProps {
   variant?: ButtonVariant;
   loading?: boolean;
   children?: React.ReactNode;
+  icon?: keyof typeof Ionicons.glyphMap;
 }
 
 export function Button({ 
@@ -28,6 +31,7 @@ export function Button({
   style,
   children,
   onPress,
+  icon,
   ...props 
 }: ButtonProps) {
   const isDisabled = disabled || loading;
@@ -38,6 +42,12 @@ export function Button({
     if (onPress) {
       onPress(event);
     }
+  };
+
+  const getIconColor = () => {
+    if (variant === 'primary' || variant === 'secondary') return '#fff';
+    if (variant === 'ghost') return '#007AFF';
+    return '#007AFF';
   };
 
   return (
@@ -55,9 +65,19 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? '#fff' : '#007AFF'} />
       ) : (
-        <Text style={[styles.text, styles[`${variant}Text`]]}>
-          {content}
-        </Text>
+        <View style={styles.content}>
+          {icon && (
+            <Ionicons 
+              name={icon} 
+              size={20} 
+              color={getIconColor()} 
+              style={styles.icon}
+            />
+          )}
+          <Text style={[styles.text, styles[`${variant}Text`]]}>
+            {content}
+          </Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -71,6 +91,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    marginRight: 8,
   },
   primary: {
     backgroundColor: '#007AFF',

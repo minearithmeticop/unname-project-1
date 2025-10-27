@@ -1,7 +1,8 @@
 import { StyleSheet, View, ScrollView, Alert, Platform } from 'react-native';
+import { useState } from 'react';
 import { Typography } from '../../src/components/atoms/Typography';
 import { Button } from '../../src/components/atoms/Button';
-import { Card } from '../../src/components/molecules/Card';
+import { Card, InputModal } from '../../src/components/molecules';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { SPACING, COLORS } from '../../src/constants';
@@ -12,12 +13,14 @@ export default function ProfileScreen() {
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
 
+  // Modal states
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
   const handleEditProfile = () => {
-    // Get current display name
-    const currentName = user?.user_metadata?.display_name || ''
-    
     // Platform-specific prompt
     if (Platform.OS === 'web') {
+      const currentName = user?.user_metadata?.display_name || ''
       const newName = (global as any).prompt?.('Enter your display name:', currentName)
       
       if (!newName) {
@@ -42,36 +45,25 @@ export default function ProfileScreen() {
       
       performUpdate()
     } else {
-      // Native - show Alert with text input
-      Alert.prompt(
-        'Edit Profile',
-        'Enter your display name',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Update',
-            onPress: async (newName?: string) => {
-              if (!newName || newName.trim().length === 0) {
-                Alert.alert('Error', 'Display name cannot be empty')
-                return
-              }
-              
-              const { error } = await updateProfile(newName.trim())
-              
-              if (error) {
-                Alert.alert('Error', `Failed to update profile: ${error.message}`)
-              } else {
-                Alert.alert('Success', 'Profile updated successfully! ✅')
-              }
-            },
-          },
-        ],
-        'plain-text',
-        currentName
-      )
+      // Native - show custom modal
+      setShowNameModal(true)
+    }
+  }
+
+  const handleNameConfirm = async (newName: string) => {
+    setShowNameModal(false)
+    
+    if (!newName || newName.trim().length === 0) {
+      Alert.alert('Error', 'Display name cannot be empty')
+      return
+    }
+    
+    const { error } = await updateProfile(newName.trim())
+    
+    if (error) {
+      Alert.alert('Error', `Failed to update profile: ${error.message}`)
+    } else {
+      Alert.alert('Success', 'Profile updated successfully! ✅')
     }
   }
 
@@ -102,35 +94,25 @@ export default function ProfileScreen() {
       
       performUpdate()
     } else {
-      // Native - show Alert with text input simulation
-      Alert.prompt(
-        'Change Password',
-        'Enter your new password (min 6 characters)',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Update',
-            onPress: async (newPassword?: string) => {
-              if (!newPassword || newPassword.length < 6) {
-                Alert.alert('Error', 'Password must be at least 6 characters long')
-                return
-              }
-              
-              const { error } = await updatePassword(newPassword)
-              
-              if (error) {
-                Alert.alert('Error', `Failed to update password: ${error.message}`)
-              } else {
-                Alert.alert('Success', 'Password updated successfully! ✅')
-              }
-            },
-          },
-        ],
-        'secure-text'
-      )
+      // Native - show custom modal
+      setShowPasswordModal(true)
+    }
+  }
+
+  const handlePasswordConfirm = async (newPassword: string) => {
+    setShowPasswordModal(false)
+    
+    if (!newPassword || newPassword.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long')
+      return
+    }
+    
+    const { error } = await updatePassword(newPassword)
+    
+    if (error) {
+      Alert.alert('Error', `Failed to update password: ${error.message}`)
+    } else {
+      Alert.alert('Success', 'Password updated successfully! ✅')
     }
   }
 
@@ -224,6 +206,7 @@ export default function ProfileScreen() {
           title="Edit Profile"
           onPress={handleEditProfile}
           variant="primary"
+          icon="person-outline"
           style={{ marginBottom: SPACING.sm }}
         />
         
@@ -231,6 +214,7 @@ export default function ProfileScreen() {
           title="Change Password"
           onPress={handleChangePassword}
           variant="secondary"
+          icon="key-outline"
           style={{ marginBottom: SPACING.sm }}
         />
         
@@ -238,6 +222,7 @@ export default function ProfileScreen() {
           title="Logout"
           onPress={handleLogout}
           variant="ghost"
+          icon="log-out-outline"
           style={{ marginBottom: SPACING.md }}
         />
 
@@ -251,6 +236,27 @@ export default function ProfileScreen() {
           </Typography>
         </View>
       </View>
+
+      {/* Input Modals */}
+      <InputModal
+        visible={showNameModal}
+        title="Edit Profile"
+        message="Enter your display name"
+        defaultValue={user?.user_metadata?.display_name || ''}
+        placeholder="John Doe"
+        onConfirm={handleNameConfirm}
+        onCancel={() => setShowNameModal(false)}
+      />
+
+      <InputModal
+        visible={showPasswordModal}
+        title="Change Password"
+        message="Enter your new password (min 6 characters)"
+        placeholder="••••••••"
+        secureTextEntry
+        onConfirm={handlePasswordConfirm}
+        onCancel={() => setShowPasswordModal(false)}
+      />
     </ScrollView>
   );
 }
