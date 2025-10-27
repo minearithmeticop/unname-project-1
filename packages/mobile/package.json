@@ -23,9 +23,8 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@types/react": "~19.1.17",
-    "@types/react-native": "^0.73.0",
-    "eslint": "^8.57.0",
-    "eslint-config-expo": "^10.0.0",
+    "eslint": "^9.38.0",
+    "eslint-config-expo": "10.0.1-canary-20251023-4c86f95",
     "expo-constants": "~18.0.10",
     "expo-linking": "~8.0.8",
     "expo-router": "~6.0.13",

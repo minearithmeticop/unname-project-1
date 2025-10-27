@@ -171,10 +171,10 @@ Each package has its own detailed documentation:
 
 | Package | Technologies | Version |
 |---------|-------------|---------|
-| Core | React, TypeScript | React 18.x |
-| Web | React, Vite, TypeScript | Vite 5.x |
-| Next.js | Next.js, React, TypeScript | Next.js 14.x |
-| Mobile | React Native, Expo | Expo SDK 51.x |
+| Core | React, TypeScript | React 19.x |
+| Web | React, Vite, TypeScript | Vite 6.x |
+| Next.js | Next.js, React, TypeScript | Next.js 15.x |
+| Mobile | React Native, Expo, Supabase | Expo SDK 54.x |
 
 ---
 

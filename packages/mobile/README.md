@@ -262,11 +262,11 @@ packages/mobile/
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "18.2.0",
-    "react-native": "0.74.5",
-    "expo": "~51.0.28",
-    "expo-router": "~3.5.23",
-    "expo-status-bar": "~1.12.1",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "expo": "~54.0.20",
+    "expo-router": "~6.0.13",
+    "expo-status-bar": "~2.0.0",
     "@monorepo/core": "workspace:*"
   },
   "devDependencies": {
