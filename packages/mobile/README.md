@@ -221,6 +221,9 @@ packages/mobile/
 │       └── index.ts
 │
 ├── assets/                  # Images, fonts, etc.
+├── docs/                    # Documentation
+│   ├── API_INTEGRATION.md   # 🌐 API services guide
+│   └── API_EXAMPLES.md      # 💡 API integration examples
 ├── ARCHITECTURE.md          # 📐 Architecture documentation
 ├── package.json
 ├── tsconfig.json
@@ -229,6 +232,8 @@ packages/mobile/
 ```
 
 **Note:** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of each folder's purpose.
+
+**API Integration:** See [docs/API_INTEGRATION.md](./docs/API_INTEGRATION.md) for free API services and [docs/API_EXAMPLES.md](./docs/API_EXAMPLES.md) for real-world examples.
 
 ---
 
