@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, Platform } from 'react-native';
 import { Typography } from '../../src/components/atoms/Typography';
 import { Button } from '../../src/components/atoms/Button';
 import { Card } from '../../src/components/molecules/Card';
@@ -23,33 +23,60 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     console.log('🔵 handleLogout called!')
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('🔄 Starting logout process...')
-              const { error } = await signOut()
-              
-              if (error) {
-                console.error('Logout error:', error)
-                Alert.alert('Error', `Failed to sign out: ${error.message}`)
-              } else {
-                console.log('✅ Successfully logged out')
+    
+    // Web-compatible confirmation
+    if (Platform.OS === 'web') {
+      const confirmed = (global as any).confirm?.('Are you sure you want to sign out?')
+      if (!confirmed) return
+      
+      const performLogout = async () => {
+        try {
+          console.log('🔄 Starting logout process...')
+          const { error } = await signOut()
+          
+          if (error) {
+            console.error('Logout error:', error)
+            ;(global as any).alert?.(`Failed to sign out: ${error.message}`)
+          } else {
+            console.log('✅ Successfully logged out')
+          }
+        } catch (error) {
+          console.error('Logout exception:', error)
+          ;(global as any).alert?.('An unexpected error occurred')
+        }
+      }
+      
+      performLogout()
+    } else {
+      // Native Alert for iOS/Android
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                console.log('🔄 Starting logout process...')
+                const { error } = await signOut()
+                
+                if (error) {
+                  console.error('Logout error:', error)
+                  Alert.alert('Error', `Failed to sign out: ${error.message}`)
+                } else {
+                  console.log('✅ Successfully logged out')
+                }
+              } catch (error) {
+                console.error('Logout exception:', error)
+                Alert.alert('Error', 'An unexpected error occurred')
               }
-            } catch (error) {
-              console.error('Logout exception:', error)
-              Alert.alert('Error', 'An unexpected error occurred')
-            }
+            },
           },
-        },
-      ]
-    )
+        ]
+      )
+    }
   };
 
   return (
