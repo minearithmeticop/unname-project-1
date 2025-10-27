@@ -46,24 +46,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('📝 Attempting to sign up:', email)
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       })
-      return { error }
+      
+      if (error) {
+        console.error('❌ Sign up error:', error)
+        return { error }
+      }
+      
+      console.log('✅ Sign up successful:', {
+        user: data.user?.email,
+        needsConfirmation: data.user?.identities?.length === 0
+      })
+      
+      return { error: null }
     } catch (error) {
+      console.error('❌ Sign up exception:', error)
       return { error: error as AuthError }
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 Attempting to sign in:', email)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-      return { error }
+      
+      if (error) {
+        console.error('❌ Sign in error:', error)
+        return { error }
+      }
+      
+      console.log('✅ Sign in successful:', data.user?.email)
+      return { error: null }
     } catch (error) {
+      console.error('❌ Sign in exception:', error)
       return { error: error as AuthError }
     }
   }
@@ -92,9 +114,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
-      return { error }
+      console.log('🔄 Attempting to reset password for:', email)
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'myapp://reset-password', // Custom scheme for mobile
+      })
+      
+      if (error) {
+        console.error('❌ Reset password error:', error)
+        return { error }
+      }
+      
+      console.log('✅ Reset password email sent successfully')
+      return { error: null }
     } catch (error) {
+      console.error('❌ Reset password exception:', error)
       return { error: error as AuthError }
     }
   }

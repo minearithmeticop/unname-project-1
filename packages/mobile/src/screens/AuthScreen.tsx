@@ -25,27 +25,55 @@ export function AuthScreen() {
   const { signIn, signUp, resetPassword } = useAuth()
 
   const handleAuth = async () => {
-    if (!email.trim() || (mode !== 'reset' && !password.trim())) {
-      Alert.alert('Error', 'Please fill in all fields')
+    // Validate email
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email')
       return
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Error', 'Please enter a valid email address')
+      return
+    }
+
+    // Validate password for signin and signup
+    if (mode !== 'reset') {
+      if (!password.trim()) {
+        Alert.alert('Error', 'Please enter your password')
+        return
+      }
+
+      if (mode === 'signup' && password.length < 6) {
+        Alert.alert('Error', 'Password must be at least 6 characters long')
+        return
+      }
     }
 
     setLoading(true)
 
     try {
       if (mode === 'signin') {
+        console.log('🔐 Signing in...')
         const { error } = await signIn(email.trim(), password)
         if (error) {
+          console.error('Sign in failed:', error)
           Alert.alert('Sign In Failed', error.message)
+        } else {
+          console.log('✅ Sign in successful!')
         }
       } else if (mode === 'signup') {
+        console.log('📝 Signing up...')
         const { error } = await signUp(email.trim(), password)
         if (error) {
+          console.error('Sign up failed:', error)
           Alert.alert('Sign Up Failed', error.message)
         } else {
+          console.log('✅ Sign up successful!')
           Alert.alert(
-            'Success!',
-            'Please check your email to verify your account.',
+            'Success! 🎉',
+            'Your account has been created. Please check your email to verify your account before signing in.',
             [
               {
                 text: 'OK',
@@ -58,13 +86,16 @@ export function AuthScreen() {
           )
         }
       } else if (mode === 'reset') {
+        console.log('🔄 Resetting password...')
         const { error } = await resetPassword(email.trim())
         if (error) {
+          console.error('Reset failed:', error)
           Alert.alert('Reset Failed', error.message)
         } else {
+          console.log('✅ Reset email sent!')
           Alert.alert(
-            'Check Your Email',
-            'Password reset instructions have been sent to your email.',
+            'Check Your Email 📧',
+            'Password reset instructions have been sent to your email. Please check your inbox (and spam folder).',
             [
               {
                 text: 'OK',
@@ -77,6 +108,7 @@ export function AuthScreen() {
         }
       }
     } catch (error) {
+      console.error('Unexpected error:', error)
       Alert.alert('Error', 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
