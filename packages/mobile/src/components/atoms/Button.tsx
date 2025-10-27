@@ -27,10 +27,18 @@ export function Button({
   disabled,
   style,
   children,
+  onPress,
   ...props 
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const content = title || children;
+
+  const handlePress = (event: any) => {
+    console.log('🟢 Button pressed!', { title, content });
+    if (onPress) {
+      onPress(event);
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -41,6 +49,7 @@ export function Button({
         style,
       ]}
       disabled={isDisabled}
+      onPress={handlePress}
       {...props}
     >
       {loading ? (

@@ -22,6 +22,7 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
+    console.log('🔵 handleLogout called!')
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',

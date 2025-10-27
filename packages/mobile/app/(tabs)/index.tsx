@@ -34,6 +34,7 @@ export default function HomeScreen() {
   }
 
   const handleSignOut = async () => {
+    console.log('🔵 handleSignOut called!')
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
