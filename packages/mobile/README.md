@@ -223,8 +223,11 @@ packages/mobile/
 ├── assets/                  # Images, fonts, etc.
 ├── docs/                    # Documentation
 │   ├── API_INTEGRATION.md   # 🌐 API services guide
-│   └── API_EXAMPLES.md      # 💡 API integration examples
+│   ├── API_EXAMPLES.md      # 💡 API integration examples
+│   └── SECURITY.md          # 🔐 Security best practices
 ├── ARCHITECTURE.md          # 📐 Architecture documentation
+├── .env.example             # ⚠️ Environment variables template
+├── .gitignore               # 🚫 Files to ignore in git
 ├── package.json
 ├── tsconfig.json
 ├── app.json
@@ -234,6 +237,8 @@ packages/mobile/
 **Note:** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of each folder's purpose.
 
 **API Integration:** See [docs/API_INTEGRATION.md](./docs/API_INTEGRATION.md) for free API services and [docs/API_EXAMPLES.md](./docs/API_EXAMPLES.md) for real-world examples.
+
+**Security:** See [docs/SECURITY.md](./docs/SECURITY.md) for API key security and best practices.
 
 ---
 
