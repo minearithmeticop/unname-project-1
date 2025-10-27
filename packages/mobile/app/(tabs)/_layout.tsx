@@ -1,10 +1,21 @@
 import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useTheme } from '../../src/contexts/ThemeContext';
 import { Loading } from '../../src/components/atoms/Loading';
 import { AuthScreen } from '../../src/screens/AuthScreen';
 
 export default function TabLayout() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
+
+  // กำหนดสีตาม theme
+  const isDark = theme === 'dark';
+  const headerBg = isDark ? '#1a1a1a' : '#ffffff';
+  const tabBarBg = isDark ? '#1a1a1a' : '#f8f8f8';
+  const tabBarBorder = isDark ? '#2a2a2a' : '#e5e5e5';
+  const activeColor = '#007AFF';
+  const inactiveColor = isDark ? '#8E8E93' : '#999999';
 
   console.log('🔐 TabLayout - Auth state:', { 
     hasUser: !!user, 
@@ -30,7 +41,21 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#007AFF',
+        headerTitle: '', // ซ่อนชื่อใน header
+        headerStyle: {
+          backgroundColor: headerBg,
+        },
+        headerShadowVisible: false, // ไม่แสดงเงาใต้ header
+        tabBarActiveTintColor: activeColor,
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarStyle: {
+          backgroundColor: tabBarBg,
+          borderTopColor: tabBarBorder,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
       }}
     >
       <Tabs.Screen
@@ -38,6 +63,9 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarLabel: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -45,6 +73,9 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarLabel: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
