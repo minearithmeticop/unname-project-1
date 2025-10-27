@@ -1,59 +1,133 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { Typography } from '../../src/components/atoms/Typography';
+import { Button } from '../../src/components/atoms/Button';
+import { Card } from '../../src/components/molecules/Card';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { SPACING, COLORS } from '../../src/constants';
+import { formatDate } from '../../src/utils/helpers';
 
 export default function ProfileScreen() {
+  const { theme } = useTheme();
+  const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
+  const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
+
+  const handleEditProfile = () => {
+    Alert.alert('Edit Profile', 'Edit Profile feature coming soon!');
+  };
+
+  const handleSettings = () => {
+    Alert.alert('Settings', 'Settings feature coming soon!');
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Logout feature coming soon!');
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile Screen</Text>
-      <Text style={styles.description}>
-        This is a profile screen built with Expo Router.
-      </Text>
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>User</Text>
+    <ScrollView style={[styles.container, { backgroundColor }]}>
+      <View style={styles.content}>
+        <Typography variant="h1" style={{ color: textColor }}>
+          Profile Screen
+        </Typography>
+        <Typography variant="body" style={{ color: textColor, textAlign: 'center', marginBottom: SPACING.xl }}>
+          Demonstrating all custom components
+        </Typography>
+
+        {/* User Info Card */}
+        <Card
+          title="User Information"
+          description="Name: John Doe | Email: john@example.com"
+          onPress={handleEditProfile}
+          buttonText="Edit Profile"
+          variant="primary"
+        />
+
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <Typography variant="h2" style={{ color: textColor, marginBottom: SPACING.md }}>
+            Statistics
+          </Typography>
+          
+          <Card
+            title="Projects"
+            description="Total projects: 12 | Active: 5"
+            onPress={() => Alert.alert('Projects', 'View all projects')}
+            buttonText="View All"
+            variant="secondary"
+          />
+          
+          <Card
+            title="Activity"
+            description={`Last active: ${formatDate(new Date())}`}
+            onPress={() => Alert.alert('Activity', 'View activity details')}
+            buttonText="Details"
+            variant="outline"
+          />
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          <Typography variant="h2" style={{ color: textColor, marginBottom: SPACING.md }}>
+            Quick Actions
+          </Typography>
+          
+          <Button
+            title="Settings"
+            onPress={handleSettings}
+            variant="secondary"
+            style={{ marginBottom: SPACING.sm }}
+          />
+          
+          <Button
+            title="Help & Support"
+            onPress={() => Alert.alert('Help', 'Opening Help Center...')}
+            variant="outline"
+            style={{ marginBottom: SPACING.sm }}
+          />
+          
+          <Button
+            title="Logout"
+            onPress={handleLogout}
+            variant="ghost"
+          />
+        </View>
+
+        {/* Info Section */}
+        <View style={styles.infoContainer}>
+          <Typography variant="caption" style={{ color: textColor, textAlign: 'center' }}>
+            App Version: 1.0.0
+          </Typography>
+          <Typography variant="caption" style={{ color: textColor, textAlign: 'center', marginTop: SPACING.xs }}>
+            Built with React Native + Expo
+          </Typography>
+        </View>
       </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>App Version:</Text>
-        <Text style={styles.value}>1.0.0</Text>
-      </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  content: {
+    padding: SPACING.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  statsContainer: {
+    width: '100%',
+    marginTop: SPACING.xl,
   },
-  description: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 32,
+  actionsContainer: {
+    width: '100%',
+    marginTop: SPACING.xl,
   },
   infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
+    marginTop: SPACING.xl,
+    paddingTop: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: '#C6C6C8',
     width: '100%',
-    maxWidth: 300,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    flex: 1,
-  },
-  value: {
-    fontSize: 16,
-    color: '#666',
-    flex: 1,
-    textAlign: 'right',
+    alignItems: 'center',
   },
 });

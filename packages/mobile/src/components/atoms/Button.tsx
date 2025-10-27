@@ -14,12 +14,14 @@ import {
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 
 interface ButtonProps extends TouchableOpacityProps {
+  title?: string;  // For compatibility with React Native Button API
   variant?: ButtonVariant;
   loading?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function Button({ 
+  title,
   variant = 'primary',
   loading = false,
   disabled,
@@ -28,6 +30,7 @@ export function Button({
   ...props 
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const content = title || children;
 
   return (
     <TouchableOpacity
@@ -44,7 +47,7 @@ export function Button({
         <ActivityIndicator color={variant === 'primary' ? '#fff' : '#007AFF'} />
       ) : (
         <Text style={[styles.text, styles[`${variant}Text`]]}>
-          {children}
+          {content}
         </Text>
       )}
     </TouchableOpacity>

@@ -11,9 +11,16 @@ interface CardProps {
   description?: string;
   onPress?: () => void;
   buttonText?: string;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
 }
 
-export function Card({ title, description, onPress, buttonText }: CardProps) {
+export function Card({ 
+  title, 
+  description, 
+  onPress, 
+  buttonText,
+  variant = 'primary'
+}: CardProps) {
   return (
     <View style={styles.container}>
       <Typography variant="h3" style={styles.title}>
@@ -28,12 +35,11 @@ export function Card({ title, description, onPress, buttonText }: CardProps) {
       
       {onPress && buttonText && (
         <Button 
-          variant="primary" 
+          variant={variant}
           onPress={onPress}
           style={styles.button}
-        >
-          {buttonText}
-        </Button>
+          title={buttonText}
+        />
       )}
     </View>
   );
