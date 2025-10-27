@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useState } from 'react';
@@ -17,6 +17,9 @@ export default function TabLayout() {
   const isDark = theme === 'dark';
   const headerBg = isDark ? '#1a1a1a' : '#ffffff';
   const iconColor = isDark ? '#ffffff' : '#000000';
+  const tabBarBg = isDark ? '#1a1a1a' : '#ffffff';
+  const tabBarActiveTint = '#2196F3';
+  const tabBarInactiveTint = isDark ? '#888' : '#999';
 
   console.log('🔐 TabLayout - Auth state:', { 
     hasUser: !!user, 
@@ -36,11 +39,11 @@ export default function TabLayout() {
     return <AuthScreen />;
   }
 
-  // ถ้า login แล้ว → แสดง Stack with header
+  // ถ้า login แล้ว → แสดง Tabs with header
   console.log('✅ User authenticated, showing app');
   return (
     <>
-      <Stack
+      <Tabs
         screenOptions={{
           headerShown: true,
           headerStyle: {
@@ -89,10 +92,59 @@ export default function TabLayout() {
               </View>
             </TouchableOpacity>
           ),
+          tabBarStyle: {
+            backgroundColor: tabBarBg,
+            borderTopColor: isDark ? '#333' : '#e0e0e0',
+            borderTopWidth: 1,
+            height: 60,
+            paddingBottom: 8,
+            paddingTop: 8,
+          },
+          tabBarActiveTintColor: tabBarActiveTint,
+          tabBarInactiveTintColor: tabBarInactiveTint,
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '600',
+          },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Home' }} />
-      </Stack>
+        <Tabs.Screen 
+          name="index" 
+          options={{ 
+            title: 'Home',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="home" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="todo" 
+          options={{ 
+            title: 'Tasks',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="checkmark-circle" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="dreams" 
+          options={{ 
+            title: 'Dreams',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="moon" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="calendar" 
+          options={{ 
+            title: 'Calendar',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="calendar" size={size} color={color} />
+            ),
+          }} 
+        />
+      </Tabs>
 
       <ProfileDrawer
         visible={drawerVisible}

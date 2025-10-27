@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   backButton: {
-    marginLeft: 32, // เท่ากับ burger button
+    marginLeft: 16, // เท่ากับ burger button
     padding: 0,
   },
   content: {

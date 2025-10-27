@@ -1,84 +1,193 @@
-import { StyleSheet, View, ScrollView, Alert } from 'react-native';
-import { Button } from '../../src/components/atoms/Button';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography } from '../../src/components/atoms/Typography';
-import { Card } from '../../src/components/molecules/Card';
-import { useCounter } from '../../src/hooks/useCounter';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { SPACING, COLORS } from '../../src/constants';
+import { useTodo } from '../../src/contexts/TodoContext';
+import { useDream } from '../../src/contexts/DreamContext';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { COLORS, SPACING } from '../../src/constants';
 
-export default function HomeScreen() {
-  const { count, increment, decrement, reset } = useCounter(0);
+export default function DashboardScreen() {
   const { theme } = useTheme();
-  
-  const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
-  const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
+  const { todos } = useTodo();
+  const { dreams } = useDream();
+  const { user } = useAuth();
+  const isDark = theme === 'dark';
+
+  const bgColor = isDark ? COLORS.background.dark : COLORS.background.light;
+  const textColor = isDark ? COLORS.text.light : COLORS.text.dark;
+  const cardBg = isDark ? '#1e1e1e' : '#fff';
+
+  // Get today's stats
+  const today = new Date().toISOString().split('T')[0];
+  const todayTodos = todos.filter(t => t.date === today);
+  const pendingTodos = todayTodos.filter(t => !t.completed).length;
+  const completedTodos = todayTodos.filter(t => t.completed).length;
+  const recentDreams = dreams.slice(0, 3);
+
+  const QuickActionCard = ({ 
+    icon, 
+    title, 
+    color, 
+    onPress 
+  }: { 
+    icon: keyof typeof Ionicons.glyphMap; 
+    title: string; 
+    color: string; 
+    onPress: () => void;
+  }) => (
+    <TouchableOpacity
+      style={[styles.quickCard, { backgroundColor: cardBg }]}
+      onPress={onPress}
+    >
+      <View style={[styles.iconCircle, { backgroundColor: color + '20' }]}>
+        <Ionicons name={icon} size={28} color={color} />
+      </View>
+      <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
+        {title}
+      </Typography>
+    </TouchableOpacity>
+  );
+
+  const StatCard = ({ 
+    icon, 
+    label, 
+    value, 
+    color 
+  }: { 
+    icon: keyof typeof Ionicons.glyphMap; 
+    label: string; 
+    value: number; 
+    color: string;
+  }) => (
+    <View style={[styles.statCard, { backgroundColor: cardBg }]}>
+      <Ionicons name={icon} size={32} color={color} />
+      <Typography variant="h2" style={{ color: textColor, marginTop: 8 }}>
+        {value}
+      </Typography>
+      <Typography variant="caption" style={{ color: '#999' }}>
+        {label}
+      </Typography>
+    </View>
+  );
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.content}>
-        {/* Welcome Message */}
-        <View style={styles.welcomeContainer}>
-          <Typography variant="h1" style={{ color: textColor }}>
-            Welcome Back! 👋
-          </Typography>
-        </View>
-
-        <Typography variant="body" style={{ color: textColor, textAlign: 'center', marginBottom: SPACING.lg }}>
-          Built with Expo Router and Custom Components
+    <ScrollView style={[styles.container, { backgroundColor: bgColor }]}>
+      {/* Welcome Header */}
+      <View style={styles.header}>
+        <Typography variant="h1" style={{ color: textColor }}>
+          Welcome back!
         </Typography>
+        <Typography variant="body" style={{ color: '#999', marginTop: 4 }}>
+          {user?.email || 'User'}
+        </Typography>
+      </View>
 
-        {/* Counter Demo using Custom Hook */}
-        <View style={styles.counterContainer}>
-          <Typography variant="h2" style={{ color: textColor }}>
-            Counter Demo
-          </Typography>
-          <Typography variant="h3" style={{ color: COLORS.primary, marginVertical: SPACING.md }}>
-            Count: {count}
-          </Typography>
-          
-          <View style={styles.buttonContainer}>
-            <Button title="Increment" onPress={increment} variant="primary" />
-            <View style={styles.buttonSpacer} />
-            <Button title="Decrement" onPress={decrement} variant="secondary" />
+      {/* Today's Stats */}
+      <View style={styles.section}>
+        <Typography variant="h3" style={{ color: textColor, marginBottom: SPACING.md }}>
+          Today's Overview
+        </Typography>
+        <View style={styles.statsRow}>
+          <StatCard
+            icon="checkmark-circle"
+            label="Completed"
+            value={completedTodos}
+            color="#4CAF50"
+          />
+          <StatCard
+            icon="time"
+            label="Pending"
+            value={pendingTodos}
+            color="#FF9800"
+          />
+          <StatCard
+            icon="moon"
+            label="Total Dreams"
+            value={dreams.length}
+            color="#9C27B0"
+          />
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.section}>
+        <Typography variant="h3" style={{ color: textColor, marginBottom: SPACING.md }}>
+          Quick Actions
+        </Typography>
+        <View style={styles.quickActionsRow}>
+          <QuickActionCard
+            icon="add-circle"
+            title="Add Todo"
+            color={COLORS.primary}
+            onPress={() => router.push('/todo')}
+          />
+          <QuickActionCard
+            icon="create"
+            title="Record Dream"
+            color="#9C27B0"
+            onPress={() => router.push('/dreams')}
+          />
+          <QuickActionCard
+            icon="calendar"
+            title="View Calendar"
+            color="#FF5722"
+            onPress={() => router.push('/calendar')}
+          />
+        </View>
+      </View>
+
+      {/* Recent Dreams Preview */}
+      {recentDreams.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Typography variant="h3" style={{ color: textColor }}>
+              Recent Dreams
+            </Typography>
+            <TouchableOpacity onPress={() => router.push('/dreams')}>
+              <Typography variant="caption" style={{ color: COLORS.primary }}>
+                View All
+              </Typography>
+            </TouchableOpacity>
           </View>
           
-          <View style={styles.buttonSpacer} />
-          <Button title="Reset Counter" onPress={reset} variant="outline" />
-        </View>
+          {recentDreams.map((dream) => {
+            const moodEmojiMap: Record<string, string> = {
+              happy: '😊',
+              sad: '😢',
+              neutral: '😐',
+              scary: '😨',
+              exciting: '🤩',
+            };
+            const moodEmoji = dream.mood ? moodEmojiMap[dream.mood] || '😐' : '😐';
 
-        {/* Card Components Demo */}
-        <View style={styles.cardsContainer}>
-          <Typography variant="h2" style={{ color: textColor, marginBottom: SPACING.md }}>
-            Card Components
-          </Typography>
-          
-          <Card
-            title="Primary Card"
-            description="This is a primary card component using Atomic Design pattern"
-            onPress={() => Alert.alert('Primary Card', 'Primary Card Pressed!')}
-            buttonText="Action"
-            variant="primary"
-          />
-          
-          <Card
-            title="Feature Card"
-            description="Cards are molecules that combine Typography and Button atoms"
-            onPress={() => Alert.alert('Feature Card', 'Feature Card Pressed!')}
-            buttonText="Learn More"
-            variant="outline"
-          />
-          
-          <Card
-            title="Info Card"
-            description="All components follow the design patterns documented in ARCHITECTURE.md"
-            onPress={() => Alert.alert('Info Card', 'Info Card Pressed!')}
-            buttonText="View Docs"
-            variant="ghost"
-          />
+            return (
+              <View key={dream.id} style={[styles.dreamPreview, { backgroundColor: cardBg }]}>
+                <View style={styles.dreamHeader}>
+                  <Typography variant="body" style={{ color: textColor, fontWeight: '600', flex: 1 }}>
+                    {dream.title}
+                  </Typography>
+                  <Typography variant="h3" style={{ fontSize: 20 }}>
+                    {moodEmoji}
+                  </Typography>
+                </View>
+                <Typography variant="caption" style={{ color: '#999', marginTop: 4 }} numberOfLines={2}>
+                  {dream.content}
+                </Typography>
+              </View>
+            );
+          })}
         </View>
+      )}
 
-        <Typography variant="caption" style={{ color: textColor, textAlign: 'center', marginTop: SPACING.xl }}>
-          Using: Custom Hooks, Context API, Atomic Design, and TypeScript
+      {/* Motivation */}
+      <View style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}>
+        <Ionicons name="bulb" size={32} color={COLORS.primary} />
+        <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
+          {pendingTodos > 0 
+            ? `You have ${pendingTodos} ${pendingTodos === 1 ? 'task' : 'tasks'} to complete today!`
+            : 'Great job! All tasks completed! 🎉'}
         </Typography>
       </View>
     </ScrollView>
@@ -89,31 +198,75 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  header: {
     padding: SPACING.lg,
-    alignItems: 'center',
+    paddingTop: SPACING.xl,
   },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    width: '100%',
+  section: {
+    padding: SPACING.lg,
   },
-  counterContainer: {
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: SPACING.xl,
-    width: '100%',
+    marginBottom: SPACING.md,
   },
-  buttonContainer: {
+  statsRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  statCard: {
+    flex: 1,
+    padding: SPACING.md,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickActionsRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  quickCard: {
+    flex: 1,
+    padding: SPACING.md,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dreamPreview: {
+    padding: SPACING.md,
+    borderRadius: 8,
+    marginBottom: SPACING.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  dreamHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  buttonSpacer: {
-    width: SPACING.md,
-    height: SPACING.md,
-  },
-  cardsContainer: {
-    width: '100%',
-    marginTop: SPACING.xl,
+  motivationCard: {
+    margin: SPACING.lg,
+    padding: SPACING.lg,
+    borderRadius: 12,
+    alignItems: 'center',
   },
 });
