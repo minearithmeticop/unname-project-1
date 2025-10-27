@@ -3,11 +3,13 @@ import { Typography } from '../../src/components/atoms/Typography';
 import { Button } from '../../src/components/atoms/Button';
 import { Card } from '../../src/components/molecules/Card';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { SPACING, COLORS } from '../../src/constants';
 import { formatDate } from '../../src/utils/helpers';
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
+  const { user, signOut } = useAuth();
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
 
@@ -20,7 +22,23 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Logout feature coming soon!');
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await signOut();
+            if (error) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -36,7 +54,7 @@ export default function ProfileScreen() {
         {/* User Info Card */}
         <Card
           title="User Information"
-          description="Name: John Doe | Email: john@example.com"
+          description={`Email: ${user?.email || 'Not available'}\nUser ID: ${user?.id.slice(0, 8)}...`}
           onPress={handleEditProfile}
           buttonText="Edit Profile"
           variant="primary"

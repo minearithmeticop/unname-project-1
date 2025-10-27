@@ -1,24 +1,77 @@
-import { StyleSheet, View, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Button } from '../../src/components/atoms/Button';
 import { Typography } from '../../src/components/atoms/Typography';
 import { Card } from '../../src/components/molecules/Card';
 import { useCounter } from '../../src/hooks/useCounter';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { AuthScreen } from '../../src/screens/AuthScreen';
 import { SPACING, COLORS } from '../../src/constants';
 
 export default function HomeScreen() {
   const { count, increment, decrement, reset } = useCounter(0);
   const { theme, toggleTheme } = useTheme();
+  const { user, loading: authLoading, signOut } = useAuth();
   
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
 
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <View style={[styles.container, styles.centered, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Typography variant="body" style={{ color: textColor, marginTop: SPACING.md }}>
+          Loading...
+        </Typography>
+      </View>
+    );
+  }
+
+  // Show auth screen if not logged in
+  if (!user) {
+    return <AuthScreen />;
+  }
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await signOut();
+            if (error) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={[styles.container, { backgroundColor }]}>
       <View style={styles.content}>
-        <Typography variant="h1" style={{ color: textColor }}>
-          Welcome to React Native! 🎉
-        </Typography>
+        {/* User Info */}
+        <View style={styles.userInfoContainer}>
+          <Typography variant="h1" style={{ color: textColor }}>
+            Welcome Back! 👋
+          </Typography>
+          <Typography variant="body" style={{ color: COLORS.textSecondary, marginTop: SPACING.xs }}>
+            {user.email}
+          </Typography>
+          <Button
+            title="Sign Out"
+            onPress={handleSignOut}
+            variant="ghost"
+            style={{ marginTop: SPACING.sm }}
+          />
+        </View>
+
         <Typography variant="body" style={{ color: textColor, textAlign: 'center', marginBottom: SPACING.lg }}>
           Built with Expo Router and Custom Components
         </Typography>
@@ -94,9 +147,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     padding: SPACING.lg,
     alignItems: 'center',
+  },
+  userInfoContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    paddingVertical: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    width: '100%',
   },
   counterContainer: {
     alignItems: 'center',
