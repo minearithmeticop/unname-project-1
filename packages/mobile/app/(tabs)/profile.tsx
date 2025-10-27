@@ -139,19 +139,20 @@ export default function ProfileScreen() {
           Manage your account settings
         </Typography>
 
-        {/* User Info Card */}
-        <Card
-          title="User Information"
-          description={`Email: ${user?.email || 'Not available'}\nUser ID: ${user?.id.slice(0, 8)}...`}
-          variant="primary"
-        />
+        {/* User Info Card - Full Width */}
+        <View style={styles.cardContainer}>
+          <Card
+            title="User Information"
+            description={`Email: ${user?.email || 'Not available'}\nUser ID: ${user?.id.slice(0, 8)}...`}
+            variant="primary"
+          />
+        </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionsContainer}>
-          <Typography variant="h2" style={{ color: textColor, marginBottom: SPACING.md }}>
-            Quick Actions
-          </Typography>
-          
+        {/* Spacer to push buttons to bottom */}
+        <View style={styles.spacer} />
+
+        {/* Bottom Action Buttons */}
+        <View style={styles.bottomActions}>
           <Button
             title="Change Password"
             onPress={handleChangePassword}
@@ -163,6 +164,7 @@ export default function ProfileScreen() {
             title="Logout"
             onPress={handleLogout}
             variant="ghost"
+            style={{ marginBottom: SPACING.md }}
           />
         </View>
 
@@ -185,15 +187,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    flex: 1,
     padding: SPACING.lg,
-    alignItems: 'center',
   },
-  actionsContainer: {
+  cardContainer: {
     width: '100%',
-    marginTop: SPACING.xl,
+    marginBottom: SPACING.lg,
+  },
+  spacer: {
+    flex: 1,
+    minHeight: SPACING.xl * 2,
+  },
+  bottomActions: {
+    width: '100%',
+    paddingHorizontal: 0,
   },
   infoContainer: {
-    marginTop: SPACING.xl,
+    marginTop: SPACING.lg,
     paddingTop: SPACING.lg,
     borderTopWidth: 1,
     borderTopColor: '#C6C6C8',
