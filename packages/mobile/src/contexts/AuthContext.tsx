@@ -16,6 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<{ error: AuthError | null }>
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>
   updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>
+  updateProfile: (displayName: string) => Promise<{ error: AuthError | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -153,6 +154,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const updateProfile = async (displayName: string) => {
+    try {
+      console.log('👤 Attempting to update profile:', displayName)
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          display_name: displayName,
+        }
+      })
+      
+      if (error) {
+        console.error('❌ Update profile error:', error)
+        return { error }
+      }
+      
+      console.log('✅ Profile updated successfully')
+      // Update local user state
+      if (data.user) {
+        setUser(data.user)
+      }
+      return { error: null }
+    } catch (error) {
+      console.error('❌ Update profile exception:', error)
+      return { error: error as AuthError }
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -164,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         resetPassword,
         updatePassword,
+        updateProfile,
       }}
     >
       {children}

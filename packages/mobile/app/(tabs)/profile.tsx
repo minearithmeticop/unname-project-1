@@ -8,9 +8,72 @@ import { SPACING, COLORS } from '../../src/constants';
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
-  const { user, signOut, updatePassword } = useAuth();
+  const { user, signOut, updatePassword, updateProfile } = useAuth();
   const backgroundColor = theme === 'light' ? COLORS.background.light : COLORS.background.dark;
   const textColor = theme === 'light' ? COLORS.text.dark : COLORS.text.light;
+
+  const handleEditProfile = () => {
+    // Get current display name
+    const currentName = user?.user_metadata?.display_name || ''
+    
+    // Platform-specific prompt
+    if (Platform.OS === 'web') {
+      const newName = (global as any).prompt?.('Enter your display name:', currentName)
+      
+      if (!newName) {
+        return // User cancelled
+      }
+      
+      if (newName.trim().length === 0) {
+        ;(global as any).alert?.('Display name cannot be empty')
+        return
+      }
+      
+      // Update profile
+      const performUpdate = async () => {
+        const { error } = await updateProfile(newName.trim())
+        
+        if (error) {
+          ;(global as any).alert?.(`Failed to update profile: ${error.message}`)
+        } else {
+          ;(global as any).alert?.('Profile updated successfully! ✅')
+        }
+      }
+      
+      performUpdate()
+    } else {
+      // Native - show Alert with text input
+      Alert.prompt(
+        'Edit Profile',
+        'Enter your display name',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Update',
+            onPress: async (newName?: string) => {
+              if (!newName || newName.trim().length === 0) {
+                Alert.alert('Error', 'Display name cannot be empty')
+                return
+              }
+              
+              const { error } = await updateProfile(newName.trim())
+              
+              if (error) {
+                Alert.alert('Error', `Failed to update profile: ${error.message}`)
+              } else {
+                Alert.alert('Success', 'Profile updated successfully! ✅')
+              }
+            },
+          },
+        ],
+        'plain-text',
+        currentName
+      )
+    }
+  }
 
   const handleChangePassword = () => {
     // Platform-specific prompt
@@ -135,7 +198,7 @@ export default function ProfileScreen() {
       contentContainerStyle={styles.scrollContent}
     >
       <View style={styles.content}>
-        <Typography variant="h1" style={{ color: textColor }}>
+        <Typography variant="h1" style={{ color: textColor, textAlign: 'center' }}>
           Profile
         </Typography>
         <Typography variant="body" style={{ color: textColor, textAlign: 'center', marginBottom: SPACING.xl }}>
@@ -146,7 +209,7 @@ export default function ProfileScreen() {
         <View style={styles.cardContainer}>
           <Card
             title="User Information"
-            description={`Email: ${user?.email || 'Not available'}\nUser ID: ${user?.id.slice(0, 8)}...`}
+            description={`Name: ${user?.user_metadata?.display_name || 'Not set'}\nEmail: ${user?.email || 'Not available'}`}
             variant="primary"
           />
         </View>
@@ -157,6 +220,13 @@ export default function ProfileScreen() {
 
       {/* Bottom Action Buttons */}
       <View style={styles.bottomActions}>
+        <Button
+          title="Edit Profile"
+          onPress={handleEditProfile}
+          variant="primary"
+          style={{ marginBottom: SPACING.sm }}
+        />
+        
         <Button
           title="Change Password"
           onPress={handleChangePassword}
