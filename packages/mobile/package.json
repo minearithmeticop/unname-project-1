@@ -1,5 +1,5 @@
 {
-  "name": "@monorepo/mobile",
+  "name": "react-native-mobile-app",
   "version": "0.1.0",
   "main": "expo-router/entry",
   "scripts": {

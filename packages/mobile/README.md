@@ -1,4 +1,4 @@
-# @monorepo/mobile
+# react-native-mobile-app
 
 React Native mobile application built with Expo for iOS and Android.
 
@@ -248,7 +248,7 @@ packages/mobile/
 
 ```json
 {
-  "name": "@monorepo/mobile",
+  "name": "react-native-mobile-app",
   "version": "0.1.0",
   "main": "expo-router/entry",
   "scripts": {
