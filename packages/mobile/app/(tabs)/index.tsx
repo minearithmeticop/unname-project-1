@@ -6,6 +6,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useTodo } from '../../src/contexts/TodoContext';
 import { useDream } from '../../src/contexts/DreamContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { PomodoroTimer } from '../../src/components/organisms/PomodoroTimer';
 import { COLORS, SPACING } from '../../src/constants';
 
 export default function DashboardScreen() {
@@ -74,14 +75,35 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: bgColor }]}>
-      {/* Welcome Header */}
+      {/* Task Status Header */}
       <View style={styles.header}>
-        <Typography variant="h1" style={{ color: textColor }}>
-          Welcome back!
-        </Typography>
-        <Typography variant="body" style={{ color: '#999', marginTop: 4 }}>
-          {user?.user_metadata?.display_name || 'User'}
-        </Typography>
+        {pendingTodos === 0 && todayTodos.length > 0 ? (
+          <View style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}>
+            <Ionicons name="bulb" size={32} color={COLORS.primary} />
+            <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
+              Great job! All tasks completed! 🎉
+            </Typography>
+          </View>
+        ) : pendingTodos > 0 ? (
+          <View style={[styles.motivationCard, { backgroundColor: '#FF9800' + '20' }]}>
+            <Ionicons name="flash" size={32} color="#FF9800" />
+            <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
+              You have {pendingTodos} task{pendingTodos > 1 ? 's' : ''} to complete today!
+            </Typography>
+          </View>
+        ) : (
+          <View style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}>
+            <Ionicons name="add-circle-outline" size={32} color={COLORS.primary} />
+            <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
+              No tasks for today. Create your first task! 💪
+            </Typography>
+          </View>
+        )}
+      </View>
+
+      {/* Pomodoro Timer */}
+      <View style={styles.section}>
+        <PomodoroTimer compact />
       </View>
 
       {/* Today's Stats */}
@@ -180,16 +202,6 @@ export default function DashboardScreen() {
           })}
         </View>
       )}
-
-      {/* Motivation */}
-      <View style={[styles.motivationCard, { backgroundColor: COLORS.primary + '20' }]}>
-        <Ionicons name="bulb" size={32} color={COLORS.primary} />
-        <Typography variant="body" style={{ color: textColor, marginTop: 8, textAlign: 'center' }}>
-          {pendingTodos > 0 
-            ? `You have ${pendingTodos} ${pendingTodos === 1 ? 'task' : 'tasks'} to complete today!`
-            : 'Great job! All tasks completed! 🎉'}
-        </Typography>
-      </View>
     </ScrollView>
   );
 }
@@ -199,11 +211,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: SPACING.lg,
-    paddingTop: SPACING.xl,
+    padding: SPACING.md,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   section: {
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -264,8 +278,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   motivationCard: {
-    margin: SPACING.lg,
-    padding: SPACING.lg,
+    marginHorizontal: SPACING.lg,
+    marginVertical: SPACING.sm,
+    padding: SPACING.md,
     borderRadius: 12,
     alignItems: 'center',
   },

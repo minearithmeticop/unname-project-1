@@ -2,6 +2,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography } from '../../../components/atoms/Typography';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { usePomodoro } from '../../../contexts/PomodoroContext';
 import { Todo } from '../../../types/todo';
 import { COLORS, SPACING } from '../../../constants';
 
@@ -13,6 +14,7 @@ interface TodoItemProps {
 
 export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   const { theme } = useTheme();
+  const { startPomodoro } = usePomodoro();
   const isDark = theme === 'dark';
   
   const cardBg = isDark ? '#2a2a2a' : '#ffffff';
@@ -70,6 +72,16 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
         )}
       </View>
 
+      {/* Pomodoro Button (only for non-completed tasks) */}
+      {!todo.completed && (
+        <TouchableOpacity 
+          onPress={() => startPomodoro(todo.title)} 
+          style={styles.pomodoroButton}
+        >
+          <Ionicons name="timer-outline" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+      )}
+
       {/* Delete Button */}
       <TouchableOpacity onPress={onDelete} style={styles.deleteButton}>
         <Ionicons name="trash-outline" size={20} color="#F44336" />
@@ -117,7 +129,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
+  pomodoroButton: {
+    padding: SPACING.xs,
+    marginRight: SPACING.xs,
+  },
   deleteButton: {
-    padding: 8,
+    padding: SPACING.xs,
   },
 });
