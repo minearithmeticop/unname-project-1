@@ -70,9 +70,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      console.log('🚪 Signing out...')
       const { error } = await supabase.auth.signOut()
-      return { error }
+      
+      if (error) {
+        console.error('❌ Sign out error:', error)
+        return { error }
+      }
+      
+      console.log('✅ Sign out successful')
+      // Clear local state immediately
+      setUser(null)
+      setSession(null)
+      
+      return { error: null }
     } catch (error) {
+      console.error('❌ Sign out exception:', error)
       return { error: error as AuthError }
     }
   }

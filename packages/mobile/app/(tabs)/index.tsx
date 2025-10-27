@@ -43,14 +43,24 @@ export default function HomeScreen() {
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
-            const { error } = await signOut();
-            if (error) {
-              Alert.alert('Error', 'Failed to sign out');
+            try {
+              console.log('🔄 Starting sign out process...')
+              const { error } = await signOut()
+              
+              if (error) {
+                console.error('Sign out error:', error)
+                Alert.alert('Error', `Failed to sign out: ${error.message}`)
+              } else {
+                console.log('✅ Successfully signed out')
+              }
+            } catch (error) {
+              console.error('Sign out exception:', error)
+              Alert.alert('Error', 'An unexpected error occurred')
             }
           },
         },
       ]
-    );
+    )
   };
 
   return (

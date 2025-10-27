@@ -31,14 +31,24 @@ export default function ProfileScreen() {
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
-            const { error } = await signOut();
-            if (error) {
-              Alert.alert('Error', 'Failed to sign out');
+            try {
+              console.log('🔄 Starting logout process...')
+              const { error } = await signOut()
+              
+              if (error) {
+                console.error('Logout error:', error)
+                Alert.alert('Error', `Failed to sign out: ${error.message}`)
+              } else {
+                console.log('✅ Successfully logged out')
+              }
+            } catch (error) {
+              console.error('Logout exception:', error)
+              Alert.alert('Error', 'An unexpected error occurred')
             }
           },
         },
       ]
-    );
+    )
   };
 
   return (
